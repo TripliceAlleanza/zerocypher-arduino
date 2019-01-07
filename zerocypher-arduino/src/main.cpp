@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <ArduinoJson.h>
+#include <SPI.h>
+
+#include "crypthograpy.h"
 
 #define DEBUG
 #define DEBUG_OUTPUT Serial
@@ -14,7 +17,9 @@
 #endif
 
 #define SERVO_PIN 10
-#define STEP 6.15f
+#define STEP 6.25f
+#define START_ANGLE 21.0f
+#define TONE_PIN 3
 
 #pragma region typedef
 struct InPacket {
@@ -88,46 +93,34 @@ String getWriteString(InPacket packet) {
 }
 #pragma endregion
 
-#pragma region criptatura
-String ceasarEncrypt(String s, int key) {
-  return "encrypted";
-}
-
-String ceasarDecrypt(String e, int key) {
-  return "notimpl";
-}
-
-String transpositionEncrypt(String d, String key) {
-  return "notimpl";
-}
-
-String transpositionDecrypt(String e, String key) {
-  return "notimpl";
-}
-
-#pragma endregion
-
 #pragma region i-o
 void writeString(String str) {
+  Serial.println(str);
   for(int i = 0; i<str.length(); ++i) {
     if((int)str[i] == 13) continue;
     writeLetter(str[i]);
-    tone(3, 1000, 200);
     delay(1000);
   }
 }
 
 void writeLetter(char c) {
   int value = (int)c;
+  if(value == 32) {
+    tone(TONE_PIN, 1300, 100);
+    delay(100);
+    tone(TONE_PIN, 1300, 100);
+    return;
+  }
+  tone(TONE_PIN, 1000, 200);
   int writeValue = value - 97;
-  float fvalue = 21.0 + (float)(STEP * writeValue);
+  float fvalue = START_ANGLE + (float)(STEP * writeValue);
   myServo.write(180 - round(fvalue));
 }
 
 String waitForString() {
   String str = "";
   OutPacket ready {0, "ready."};
-  Serial.println(serializeOutput(ready))
+  Serial.println(serializeOutput(ready));
   while(Serial.available() == 0){;}
   str = Serial.readStringUntil('\n');
   return str;
