@@ -14,7 +14,7 @@
 #endif
 
 #define SERVO_PIN 10
-#define STEP 7.2f
+#define STEP 6.15f
 
 #pragma region typedef
 struct InPacket {
@@ -53,10 +53,10 @@ void setup() {
 
 void loop() {
   String value = waitForString();
-  Serial.println(value.c_str());
   
   InPacket packet = processJSON(value);
   OutPacket writing {packet.id, "writing"};
+
   Serial.println(serializeOutput(writing));
 
   String string = getWriteString(packet);
@@ -71,7 +71,7 @@ InPacket processJSON(String json) {
   StaticJsonBuffer<300> buffer;
   JsonObject& root = buffer.parseObject(json.c_str());
   
-  InPacket packet {root["id"], root["msg"], root["key"], root["mode"], root["algorithm"]};
+  InPacket packet {root["id"], root["message"], root["key"], root["mode"], root["algorithm"]};
   return packet; 
 }
 
@@ -120,14 +120,16 @@ void writeString(String str) {
 void writeLetter(char c) {
   int value = (int)c;
   int writeValue = value - 97;
-  myServo.write(180 - STEP*writeValue);
+  float fvalue = 21.0 + (float)(STEP * writeValue);
+  myServo.write(180 - round(fvalue));
 }
 
 String waitForString() {
   String str = "";
+  OutPacket ready {0, "ready."};
+  Serial.println(serializeOutput(ready))
   while(Serial.available() == 0){;}
   str = Serial.readStringUntil('\n');
-  Serial.println("String letta:" + str);
   return str;
 }
 #pragma endregion
