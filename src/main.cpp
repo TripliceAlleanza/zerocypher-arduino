@@ -2,6 +2,17 @@
 #include <Servo.h>
 #include <ArduinoJson.h>
 
+#define DEBUG
+#define DEBUG_OUTPUT Serial
+
+#ifdef DEBUG
+#define DEBUG_PRINTLN(...) DEBUG_OUTPUT.println(__VA_ARGS__)
+#define DEBUG_PRINT(...) DEBUG_OUTPUT.print(__VA_ARGS__)
+#else
+#define DEBUG_PRINTLN(...) {}
+#define DEBUG_PRINT(...) {}
+#endif
+
 #define SERVO_PIN 10
 #define STEP 7.2f
 
@@ -28,6 +39,9 @@ void writeLetter(char);
 void writeString(String);
 String ceasarEncrypt(String,int);
 String ceasarDecrypt(String,int);
+InPacket processJSON(String json);
+String getWriteString(InPacket packet);
+String serializeOutput(OutPacket packet);
 
 void setup() {
   // put your setup code here, to run once:
@@ -40,12 +54,15 @@ void setup() {
 void loop() {
   String value = waitForString();
   Serial.println(value.c_str());
-  InPacket packet = processJSON(value);
   
-  auto string = getWriteString(packet);
+  InPacket packet = processJSON(value);
+  OutPacket writing {packet.id, "writing"};
+  Serial.println(serializeOutput(writing));
+
+  String string = getWriteString(packet);
   writeString(string);
   
-  OutPacket out {packet.id, "OK"};
+  OutPacket out {packet.id, "done"};
   Serial.println(serializeOutput(out));
 }
 
@@ -60,7 +77,7 @@ InPacket processJSON(String json) {
 
 String serializeOutput(OutPacket packet) {
   char buffer[100];
-  sprintf(buffer, "{\"id\"=%d,\"status\"=%s", packet.id, packet.status);
+  sprintf(buffer, "{\"id\"=%d,\"status\"=\"%s\"}", packet.id, packet.status.c_str());
   return String(buffer);
 }
 
@@ -73,15 +90,24 @@ String getWriteString(InPacket packet) {
 
 #pragma region criptatura
 String ceasarEncrypt(String s, int key) {
-  String newString = String();
+  /*String newString = String();
   for(char c : s) {
     auto nc = c+key;
     newString.concat(nc);
   }
-  Serial.println(newString);
+  Serial.println(newString);*/
+  return "encrypted";
 }
 
 String ceasarDecrypt(String e, int key) {
+  return "notimpl";
+}
+
+String transpositionEncrypt(String d, String key) {
+  return "notimpl";
+}
+
+String transpositionDecrypt(String e, String key) {
   return "notimpl";
 }
 
