@@ -90,12 +90,6 @@ String getWriteString(InPacket packet) {
 
 #pragma region criptatura
 String ceasarEncrypt(String s, int key) {
-  /*String newString = String();
-  for(char c : s) {
-    auto nc = c+key;
-    newString.concat(nc);
-  }
-  Serial.println(newString);*/
   return "encrypted";
 }
 
