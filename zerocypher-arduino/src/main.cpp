@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
-#include "crypthograpy.h"
+// #include "crypthograpy.h"
 
 #define DEBUG
 #define DEBUG_OUTPUT Serial
@@ -82,20 +82,21 @@ InPacket processJSON(String json) {
 
 String serializeOutput(OutPacket packet) {
   char buffer[100];
-  sprintf(buffer, "{\"id\"=%d,\"status\"=\"%s\"}", packet.id, packet.status.c_str());
+  sprintf(buffer, "{\"id\":%d,\"status\":\"%s\"}\n", packet.id, packet.status.c_str());
   return String(buffer);
 }
 
 String getWriteString(InPacket packet) {
-  if(packet.algorithm == "ceasar") {
-    return packet.mode ? ceasarEncrypt(packet.message, packet.key) : ceasarDecrypt(packet.message, packet.key);
+  if(packet.algorithm == "ceasar" || packet.algorithm == "cesare") {
+    return "salve";
+    // return packet.mode ? ceasarEncrypt(packet.message, packet.key) : ceasarDecrypt(packet.message, packet.key);
   }
 }
 #pragma endregion
 
 #pragma region i-o
 void writeString(String str) {
-  Serial.println(str);
+  // Serial.println(str);
   for(int i = 0; i<str.length(); ++i) {
     if((int)str[i] == 13) continue;
     writeLetter(str[i]);
