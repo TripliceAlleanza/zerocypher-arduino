@@ -3,7 +3,7 @@
 #include <ArduinoJson.h>
 #include <SPI.h>
 
-// #include "crypthograpy.h"
+#include "crypthograpy.h"
 
 #define DEBUG
 #define DEBUG_OUTPUT Serial
@@ -17,9 +17,12 @@
 #endif
 
 #define SERVO_PIN 10
-#define STEP 6.25f
-#define START_ANGLE 21.0f
 #define TONE_PIN 3
+
+#define A_VALUE 25
+#define Z_VALUE 175
+
+constexpr float STEP = (Z_VALUE - A_VALUE) / 25.0;
 
 #pragma region typedef
 struct InPacket {
@@ -88,8 +91,7 @@ String serializeOutput(OutPacket packet) {
 
 String getWriteString(InPacket packet) {
   if(packet.algorithm == "ceasar" || packet.algorithm == "cesare") {
-    return "salve";
-    // return packet.mode ? ceasarEncrypt(packet.message, packet.key) : ceasarDecrypt(packet.message, packet.key);
+    return packet.mode ? ceasarEncrypt(packet.message, packet.key) : ceasarDecrypt(packet.message, packet.key);
   }
 }
 #pragma endregion
@@ -114,7 +116,7 @@ void writeLetter(char c) {
   }
   tone(TONE_PIN, 1000, 200);
   int writeValue = value - 97;
-  float fvalue = START_ANGLE + (float)(STEP * writeValue);
+  float fvalue = A_VALUE + (float)(STEP * writeValue);
   myServo.write(180 - round(fvalue));
 }
 

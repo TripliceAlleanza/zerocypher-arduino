@@ -24,7 +24,6 @@ String ceasarEncrypt(String s, int key) {
 
 String ceasarDecrypt(String e, int key) {
     auto newString = String();
-    Serial.println("decipt");
     for(char c : e) {
         
         if(c == ' ') {
@@ -43,7 +42,11 @@ String ceasarDecrypt(String e, int key) {
 }
 
 String transpositionEncrypt(String d, String key) {
-    return "notimpl";
+    
+    
+    
+
+
 
 }
 

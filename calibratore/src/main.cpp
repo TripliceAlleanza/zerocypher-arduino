@@ -3,13 +3,17 @@
 #include <math.h>
 
 Servo myServo;
-#define STEP 6.15f
+
+#define A_VALUE 25
+#define Z_VALUE 175
+
+const float STEP = (Z_VALUE - A_VALUE) / 25.0;
 
 
 void writeLetter(char c) {
   int value = (int)c;
   int writeValue = value - 97;
-  float fvalue = 21.0 + (float)(STEP * writeValue);
+  float fvalue = A_VALUE + (float)(STEP * writeValue);
   myServo.write(180 - round(fvalue));
 }
 
@@ -42,8 +46,8 @@ void loop() {
   /*
   String s = waitForString();
   writeString(s);
-  */
   
+  /*
   char current = 'a';
   while(current < 'z' + 1) {
     Serial.println(current);
@@ -52,11 +56,17 @@ void loop() {
     tone(3, 1000, 200);
     delay(500);
   }
+  */
   
   /*
+  myServo.write(180 - A_VALUE);
+  delay(500);
   myServo.write(180 - 0);
   delay(500);
-  myServo.write(180 - 20);
+
+  myServo.write(180 - Z_VALUE);
+  delay(500);
+  myServo.write(180 - 180);
   delay(500);
   */
   /*
