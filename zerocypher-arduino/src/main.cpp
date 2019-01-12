@@ -51,7 +51,7 @@ void setup() {
 
 void loop() {
   String value = waitForString();
-  
+  if(value == "") return;
   InPacket packet = processJSON(value);
   OutPacket writing {packet.id, "writing"};
 
@@ -75,7 +75,7 @@ InPacket processJSON(String json) {
 
 String serializeOutput(OutPacket packet) {
   char buffer[100];
-  sprintf(buffer, "{\"id\":%d,\"status\":\"%s\"}\n", packet.id, packet.status.c_str());
+  sprintf(buffer, "{\"id\":%d,\"status\":\"%s\"}", packet.id, packet.status.c_str());
   return String(buffer);
 }
 

@@ -1,4 +1,3 @@
-#define DEBUG
 #define DEBUG_OUTPUT Serial
 
 #ifdef DEBUG

@@ -80,7 +80,6 @@ String transpositionEncrypt(String d, String key) {
                 swap(ckey[j], ckey[j+1]);
                 swap(matrix[j], matrix[j+1]);
             }
-    MATRIX_DEBUG(matrix, rows, columns);
 
     String finalString = readMatrix(matrix, rows, columns);
     DEBUG_PRINTLN(finalString);
@@ -142,6 +141,14 @@ void printMatrix(char** matrix, int rows, int columns) {
     }
 }
 
+transpCouple* getFirstCoupleWithLetter(transpCouple couples[], char lett, int length, int startFrom) {
+    for(int i = startFrom; i<length;++i) {
+        if(couples[i].letter == lett) return &(couples[i]);
+    }
+
+    return nullptr;
+}
+
 String transpositionDecrypt(String e, String key) {
     int rows = key.length(), columns = e.length() / key.length();
 
@@ -149,17 +156,40 @@ String transpositionDecrypt(String e, String key) {
     char alphabeticallyOrderedKey[strlen(ckey) + 1];
 
     memcpy(alphabeticallyOrderedKey, ckey, strlen(ckey) + 1);
-
     qsort(alphabeticallyOrderedKey, (size_t) strlen(alphabeticallyOrderedKey), (size_t) sizeof(char), 
     [](const void* a, const void* b) -> int {
         return *(char*)a - *(char*)b;
     });
-
+    
     auto matrix = allocMemoryForMatrix(rows, columns);
     populateMatrixDecryption(matrix, rows, columns, e);
     
-    
-    
+    transpCouple couples[rows];
 
-    return "notimplemented";
+    for(int i = 0; i < rows; ++i)
+        couples[i] = {matrix[i],alphabeticallyOrderedKey[i]};
+    
+    size_t coupleSize = sizeof(transpCouple);
+
+    for(int i = 0; i<rows; ++i) {
+        char lett = key[i];
+        auto couple = getFirstCoupleWithLetter(couples, lett, rows, i);
+        if(couple == nullptr) continue;
+        swap(couples[i], *couple);
+    }
+
+    String finalString = "";
+
+    for(int i = 0; i < rows; ++i) {
+        matrix[i] = couples[i].row;
+    }
+    
+    for(size_t i = 0; i < columns; i++)
+        for(size_t j = 0; j < rows; j++)
+            finalString.concat(matrix[j][i]);
+    
+    DEBUG_PRINTLN(finalString.c_str());
+
+    // finalString.replace("*","");
+    return finalString;
 }
