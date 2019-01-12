@@ -1,5 +1,6 @@
 #include <crypthograpy.h>
 #include <Arduino.h>
+#include "debug.h"
 
 String ceasarEncrypt(String s, int key) {
     auto newString = String();
@@ -56,15 +57,16 @@ String transpositionEncrypt(String d, String key) {
     
     int addChars = ceil((float)d.length() / key.length()) * key.length() - d.length();
     
-    for(size_t i = 0; i< addChars; ++i)
+    for(size_t i = 0; i < addChars; ++i)
         d.concat('*');
 
+    DEBUG_PRINTLN(d);
     uint32_t columns = d.length() / key.length(), rows = key.length();
 
     char** matrix = allocMemoryForMatrix(rows, columns, d);
     char ckey[key.length()];
     memcpy(ckey, cstrpointer, strlen(cstrpointer) + 1);
-    
+    DEBUG_PRINTLN(ckey);
     // ordina arrays in base a ckey
     for (size_t i = 0; i < rows - 1; i++)  // rows = lunghezza array (punt) ckey
         for (size_t j = 0; j < rows - i - 1; j++)  // rows = lunghezza array (punt) ckey
@@ -72,17 +74,17 @@ String transpositionEncrypt(String d, String key) {
                 swap(ckey[j], ckey[j+1]);
                 swap(matrix[j], matrix[j+1]);
             }
-    
+    DEBUG_MATRIX(matrix, rows, columns);
     // todo fixare memory leak su matrix (delete non fatto)
     String finalString = readMatrix(matrix, rows, columns);
-    Serial.println(finalString);
-    return finalString;   
+    DEBUG_PRINTLN(finalString);
+    return finalString;
 }
 
 char** allocMemoryForMatrix(int rows, int columns, String data) {
     char** matrix;
     matrix = (char**)malloc(sizeof(char*[rows]));
-    for(int i = 0; i<columns; ++i) {
+    for(int i = 0; i<rows; ++i) {
         matrix[i] = (char*)malloc(sizeof(char[columns]));
     }
 
