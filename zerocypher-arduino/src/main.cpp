@@ -28,7 +28,7 @@ constexpr float STEP = (Z_VALUE - A_VALUE) / 25.0;
 struct InPacket {
   int id;
   String message;
-  int key;
+  String key;
   bool mode;
   String algorithm; // TODO not used
 };
@@ -91,7 +91,10 @@ String serializeOutput(OutPacket packet) {
 
 String getWriteString(InPacket packet) {
   if(packet.algorithm == "ceasar" || packet.algorithm == "cesare") {
-    return packet.mode ? ceasarEncrypt(packet.message, packet.key) : ceasarDecrypt(packet.message, packet.key);
+    return packet.mode ? ceasarEncrypt(packet.message, packet.key.toInt()) : ceasarDecrypt(packet.message, packet.key.toInt());
+  }
+  if(packet.algorithm == "transposition" || packet.algorithm == "trasposizione") {
+    return packet.mode ? transpositionEncrypt(packet.message, packet.key) : transpositionDecrypt(packet.message, packet.key);
   }
 }
 #pragma endregion
@@ -114,6 +117,12 @@ void writeLetter(char c) {
     tone(TONE_PIN, 1300, 100);
     return;
   }
+
+  if(c == '*') {
+    tone(TONE_PIN, 2000, 200);
+    return;
+  }
+
   tone(TONE_PIN, 1000, 200);
   int writeValue = value - 97;
   float fvalue = A_VALUE + (float)(STEP * writeValue);
