@@ -199,6 +199,6 @@ String transpositionDecrypt(String e, String key) {
     
     DEBUG_PRINTLN(finalString.c_str());
 
-    // finalString.replace("*","");
+    finalString.replace("*","");
     return finalString;
 }

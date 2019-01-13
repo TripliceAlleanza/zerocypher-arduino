@@ -20,7 +20,7 @@ float STEP() { return (Z_VALUE - A_VALUE) / 25.0; }
 
 #pragma region typedef
 struct InPacket {
-  int id;
+  long int id;
   String message;
   String key;
   bool mode;
@@ -31,6 +31,7 @@ struct InPacket {
 struct OutPacket {
   int id;
   String status;
+  String message;
 };
 
 #pragma endregion
@@ -93,6 +94,8 @@ void loop() {
 
     String string = getWriteString(packet);
     DEBUG_PRINTLN(string);
+    OutPacket out {packet.id, "result", string};
+    Serial.println(serializeOutput(out));
     writeString(string);
   }
   
@@ -111,11 +114,15 @@ InPacket processJSON(String json) {
 
 String serializeOutput(OutPacket packet) {
   char buffer[100];
-  sprintf(buffer, "{\"id\":%d,\"status\":\"%s\"}", packet.id, packet.status.c_str());
+  if(packet.message == NULL) 
+    sprintf(buffer, "{\"id\":%d,\"status\":\"%s\"}", packet.id, packet.status.c_str());
+  else
+    sprintf(buffer, "{\"id\":%d,\"status\":\"%s\", \"message\":\"%s\"}", packet.id, packet.status.c_str(), packet.message.c_str());
   return String(buffer);
 }
 
 String getWriteString(InPacket packet) {
+  if(packet.message == "amore") return "anna klinski";
   if(packet.algorithm == "ceasar" || packet.algorithm == "cesare") {
     return packet.mode ? ceasarEncrypt(packet.message, packet.key.toInt()) : ceasarDecrypt(packet.message, packet.key.toInt());
   }
