@@ -1,4 +1,5 @@
 #define DEBUG_OUTPUT Serial
+#define DEBUG
 
 #ifdef DEBUG
 #define DEBUG_PRINTLN(...) DEBUG_OUTPUT.println(__VA_ARGS__)
