@@ -108,6 +108,12 @@ String getWriteString(InPacket packet) {
   if(packet.algorithm == "transposition" || packet.algorithm == "trasposizione") {
     return packet.mode ? transpositionEncrypt(packet.message, packet.key) : transpositionDecrypt(packet.message, packet.key);
   }
+  if(packet.algorithm == "plaintext" || packet.algorithm == "testo") {
+    return packet.message;
+  }
+  if(packet.algorithm == "showalphabet" || packet.algorithm == "alfabeto") {
+    return "abcdefghijklmnopqrstuvwxyz";
+  }
 }
 #pragma endregion
 
