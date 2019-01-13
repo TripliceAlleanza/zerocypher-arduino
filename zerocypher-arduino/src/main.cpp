@@ -52,7 +52,7 @@ void __EEPROM_GET_ANGLE();
 void setup() {
   // put your setup code here, to run once:
   EEPROM.begin();
-  Serial.begin(9600);
+  Serial.begin(9600, SERIAL_8E2);
   pinMode(SERVO_PIN, OUTPUT);
   myServo.attach(SERVO_PIN);
   myServo.write(180); // go to 0
@@ -68,17 +68,27 @@ void loop() {
   if(value == "") return;
   InPacket packet = processJSON(value);
 
-  if(packet.status == String("calibration")) {
-    OutPacket writing {packet.id, "calibrating"};
+  DEBUG_PRINTLN(packet.status);
+
+  if(packet.status == "ping") {
+    OutPacket ready {0, "ready."};
+    Serial.println(serializeOutput(ready));
+    return;
+  }
+
+  if(packet.status == "calibration") {
+    OutPacket writing {packet.id, "wait"};
+    Serial.println(serializeOutput(writing));
     calibrate(packet.message);
   }
 
-  if(packet.status == String("request")) {
+  if(packet.status == "request") {
     OutPacket writing {packet.id, "writing"};
 
     Serial.println(serializeOutput(writing));
 
     String string = getWriteString(packet);
+    DEBUG_PRINTLN(string);
     writeString(string);
   }
   
@@ -91,7 +101,7 @@ InPacket processJSON(String json) {
   StaticJsonBuffer<300> buffer;
   JsonObject& root = buffer.parseObject(json.c_str());
   
-  InPacket packet {root["id"], root["message"], root["key"], root["mode"], root["algorithm"], root["status"]};
+  InPacket packet {root["id"], root["message"], root["key"], root["mode"], root["algorithm"], String((const char*)root["status"])};
   return packet; 
 }
 
@@ -148,6 +158,7 @@ void writeLetter(char c) {
 }
 
 String waitForString() {
+  while(!Serial){;}
   String str = "";
   OutPacket ready {0, "ready."};
   Serial.println(serializeOutput(ready));

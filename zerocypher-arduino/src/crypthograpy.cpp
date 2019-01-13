@@ -15,11 +15,11 @@ String ceasarEncrypt(String s, int key) {
         int encl = (c + key);
 
         if (encl > 'z')
-            encl = ((encl - 'z') % 25) + 'a' - 1;
+            encl = ((encl - 'z') % 24) + 'a';
 
         newString.concat((char)encl);
     }
-
+    
     return newString;
 }
 
@@ -34,9 +34,9 @@ String ceasarDecrypt(String e, int key) {
 
         int encl = (int)c;
 
-        encl = encl - ((key % 25) - 1); 
+        encl = encl - ((key % 24) - 1); 
 
-        newString.concat((char)encl);
+        newString.concat((char)(encl));
     }
 
     return newString;
