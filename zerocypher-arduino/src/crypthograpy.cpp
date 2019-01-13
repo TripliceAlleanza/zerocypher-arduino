@@ -4,6 +4,8 @@
 
 String ceasarEncrypt(String s, int key) {
     auto newString = String();
+    DEBUG_PRINTLN(key);
+    key %= 25;
 
     for(char c : s) {
 
@@ -12,12 +14,13 @@ String ceasarEncrypt(String s, int key) {
             continue;
         }
 
-        int encl = (c + key);
+        int reported_25 = c - 'a';
+        int newChar = reported_25 + key;
+        if(newChar > 25)
+            newChar -= 26;
 
-        if (encl > 'z')
-            encl = ((encl - 'z') % 24) + 'a';
+        newString.concat((char)(newChar + 'a'));
 
-        newString.concat((char)encl);
     }
     
     return newString;
@@ -25,6 +28,9 @@ String ceasarEncrypt(String s, int key) {
 
 String ceasarDecrypt(String e, int key) {
     auto newString = String();
+    DEBUG_PRINTLN(key);
+    key %= 25;
+
     for(char c : e) {
         
         if(c == ' ') {
@@ -32,11 +38,12 @@ String ceasarDecrypt(String e, int key) {
             continue;
         }
 
-        int encl = (int)c;
+        int reported_25 = c - 'a';
+        int newChar = (reported_25 - key);
+        if(newChar < 0)
+            newChar += 26;
 
-        encl = encl - ((key % 24) - 1); 
-
-        newString.concat((char)(encl));
+        newString.concat((char)(newChar + 'a'));
     }
 
     return newString;
@@ -65,15 +72,16 @@ String transpositionEncrypt(String d, String key) {
     DEBUG_PRINTLN(d);
     uint32_t columns = d.length() / key.length(), rows = key.length();
 
-    // crea matrice
+    // crea matrice e disponi le lettere
     char** matrix = allocMemoryForMatrix(rows, columns);
     populateMatrixEncryption(matrix, rows, columns, d);
 
+    // copia la chiave (string) in array di caratteri
     char ckey[key.length()];
     memcpy(ckey, cstrpointer, strlen(cstrpointer) + 1);
     DEBUG_PRINTLN(ckey);
 
-    // ordina arrays in base a ckey
+    // ordina entrambi gli array in ordine alfabetico (nel caso di matrix intere righe vengono scambiate)
     for (size_t i = 0; i < rows - 1; i++)  // rows = lunghezza array (punt) ckey
         for (size_t j = 0; j < rows - i - 1; j++)  // rows = lunghezza array (punt) ckey
             if (ckey[j] > ckey[j+1]) {
@@ -81,6 +89,7 @@ String transpositionEncrypt(String d, String key) {
                 swap(matrix[j], matrix[j+1]);
             }
 
+    // calcola stringa finale
     String finalString = readMatrix(matrix, rows, columns);
     DEBUG_PRINTLN(finalString);
 

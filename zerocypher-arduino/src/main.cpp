@@ -16,7 +16,7 @@
 int A_VALUE = 25;
 int Z_VALUE = 175;
 
-float STEP = (Z_VALUE - A_VALUE) / 25.0;
+float STEP() { return (Z_VALUE - A_VALUE) / 25.0; }
 
 #pragma region typedef
 struct InPacket {
@@ -52,7 +52,11 @@ void __EEPROM_GET_ANGLE();
 void setup() {
   // put your setup code here, to run once:
   EEPROM.begin();
+#ifndef DEBUG
   Serial.begin(9600, SERIAL_8E2);
+#else
+  Serial.begin(9600);
+#endif
   pinMode(SERVO_PIN, OUTPUT);
   myServo.attach(SERVO_PIN);
   myServo.write(180); // go to 0
@@ -122,7 +126,7 @@ String getWriteString(InPacket packet) {
     return packet.message;
   }
   if(packet.algorithm == "showalphabet" || packet.algorithm == "alfabeto") {
-    return "abcdefghijklmnopqrstuvwxyz";
+    return "abcdefghijklmnopqrstuvwxyz *";
   }
 }
 #pragma endregion
@@ -147,13 +151,13 @@ void writeLetter(char c) {
   }
 
   if(c == '*') {
-    tone(TONE_PIN, 2000, 200);
+    tone(TONE_PIN, 2000, 300);
     return;
   }
 
   tone(TONE_PIN, 1000, 200);
   int writeValue = value - 97;
-  float fvalue = A_VALUE + (float)(STEP * writeValue);
+  float fvalue = A_VALUE + (float)(STEP() * writeValue);
   myServo.write(180 - round(fvalue));
 }
 
