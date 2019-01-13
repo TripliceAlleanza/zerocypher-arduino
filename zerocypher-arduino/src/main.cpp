@@ -2,12 +2,16 @@
 #include <Servo.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
+#include <EEPROM.h>
 
 #include "debug.h"
 #include "crypthograpy.h"
 
 #define SERVO_PIN 10
 #define TONE_PIN 3
+
+#define EEPROM_A_ADDRESS 0xA0
+#define EEPROM_Z_ADDRESS 0xA4
 
 int A_VALUE = 25;
 int Z_VALUE = 175;
@@ -42,13 +46,21 @@ InPacket processJSON(String json);
 String getWriteString(InPacket packet);
 String serializeOutput(OutPacket packet);
 void calibrate(String);
+void __EEPROM_WRITE_ANGLE(int a, int z);
+void __EEPROM_GET_ANGLE();
 
 void setup() {
   // put your setup code here, to run once:
+  EEPROM.begin();
+  Serial.begin(9600);
   pinMode(SERVO_PIN, OUTPUT);
   myServo.attach(SERVO_PIN);
-  myServo.write(180);
-  Serial.begin(9600);
+  myServo.write(180); // go to 0
+  __EEPROM_GET_ANGLE();
+
+  DEBUG_PRINT("A,Z");
+  DEBUG_PRINTLN(A_VALUE);
+  DEBUG_PRINTLN(Z_VALUE);
 }
 
 void loop() {
@@ -56,12 +68,12 @@ void loop() {
   if(value == "") return;
   InPacket packet = processJSON(value);
 
-  if(packet.status="calibration") {
+  if(packet.status == String("calibration")) {
     OutPacket writing {packet.id, "calibrating"};
     calibrate(packet.message);
   }
 
-  if(packet.status == "request") {
+  if(packet.status == String("request")) {
     OutPacket writing {packet.id, "writing"};
 
     Serial.println(serializeOutput(writing));
@@ -152,9 +164,9 @@ void calibrate(String values) {
   char* cz_v = strtok(NULL, ";");
   int z_v = atoi(cz_v);
 
-  if(a_v < 0 || z_v < 0 || a_v > 180 || z_v > 180) {
+  /*if(a_v < 0 || z_v < 0 || a_v > 180 || z_v > 180) {
     return;
-  }
+  }*/
 
   A_VALUE = a_v;
   Z_VALUE = z_v;
@@ -163,13 +175,61 @@ void calibrate(String values) {
   DEBUG_PRINTLN(Z_VALUE);
 
 
-  myServo.write(0);
-  //tone(TONE_PIN, 1000, 100);
-  myServo.write(A_VALUE);
-  //tone(TONE_PIN, 1000, 1000);
+  // write value of A
+  myServo.write(180 - A_VALUE);
+  tone(TONE_PIN, 1500, 100);
+  delay(1000);
+  
 
-  myServo.write(180);
-  //tone(TONE_PIN, 1000, 100);
-  myServo.write(Z_VALUE);
-  //tone(TONE_PIN, 1000, 1000);
+  // write 0
+  myServo.write(180 - 0);
+  tone(TONE_PIN, 1000, 100);
+  delay(1000);
+  
+
+  // write value of Z
+  myServo.write(180 - Z_VALUE);
+  tone(TONE_PIN, 1500, 100);
+  delay(1000);
+
+
+  // write value of 180
+  myServo.write(180 - 180);
+  tone(TONE_PIN, 1000, 100);
+  delay(1000);
+  
+  __EEPROM_WRITE_ANGLE(A_VALUE, Z_VALUE); 
+}
+
+void __EEPROM_WRITE_ANGLE(int a, int z) {
+  EEPROM.put(EEPROM_A_ADDRESS, a);
+  EEPROM.put(EEPROM_Z_ADDRESS, z);
+}
+
+void __EEPROM_GET_ANGLE() {
+  int a,z;
+
+  EEPROM.get(EEPROM_A_ADDRESS, a);
+  EEPROM.get(EEPROM_Z_ADDRESS, z);
+
+  DEBUG_PRINTLN(a);
+  DEBUG_PRINTLN(z);
+
+  bool flag = false;
+
+  if(a < 0 || a > 180) {
+    a = 25;
+    flag = true;
+  }
+  
+  if(z < 0 || z > 180) {
+    z = 175;
+    flag = true;
+  }
+  
+  A_VALUE = a;
+  Z_VALUE = z;
+  
+  if(flag)
+    __EEPROM_WRITE_ANGLE(a,z);
 }
