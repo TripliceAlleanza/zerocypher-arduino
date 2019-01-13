@@ -1,3 +1,4 @@
+#define ARDUINOJSON_ENABLE_ARDUINO_STRING 1
 #include <Arduino.h>
 #include <Servo.h>
 #include <ArduinoJson.h>
@@ -43,7 +44,7 @@ void writeLetter(char);
 void writeString(String);
 String ceasarEncrypt(String,int);
 String ceasarDecrypt(String,int);
-InPacket processJSON(String json);
+bool processJSON(String json, InPacket&);
 String getWriteString(InPacket packet);
 String serializeOutput(OutPacket packet);
 void calibrate(String);
@@ -71,13 +72,22 @@ void setup() {
 void loop() {
   String value = waitForString();
   if(value == "") return;
-  InPacket packet = processJSON(value);
+  InPacket packet;
+
+  if(!processJSON(value, packet)) {
+    OutPacket writing {0, "error"};
+    Serial.println(serializeOutput(writing));
+    return;
+  }
 
   DEBUG_PRINTLN(packet.status);
+  if(packet.status == NULL || packet.status == "") {
+    OutPacket writing {packet.id, "error"};
+    Serial.println(serializeOutput(writing));
+    return;
+  }
 
   if(packet.status == "ping") {
-    OutPacket ready {0, "ready."};
-    Serial.println(serializeOutput(ready));
     return;
   }
 
@@ -104,12 +114,14 @@ void loop() {
 }
 
 #pragma region processing
-InPacket processJSON(String json) {
+bool processJSON(String json, InPacket& value) {
   StaticJsonBuffer<300> buffer;
   JsonObject& root = buffer.parseObject(json.c_str());
   
+  
   InPacket packet {root["id"], root["message"], root["key"], root["mode"], root["algorithm"], String((const char*)root["status"])};
-  return packet; 
+  value = packet;
+  return root.success(); 
 }
 
 String serializeOutput(OutPacket packet) {
@@ -169,7 +181,6 @@ void writeLetter(char c) {
 }
 
 String waitForString() {
-  while(!Serial){;}
   String str = "";
   OutPacket ready {0, "ready."};
   Serial.println(serializeOutput(ready));
