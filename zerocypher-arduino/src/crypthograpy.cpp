@@ -197,6 +197,11 @@ String transpositionDecrypt(String e, String key) {
         for(size_t j = 0; j < rows; j++)
             finalString.concat(matrix[j][i]);
     
+    for(size_t i = 0; i < rows; ++i)
+        free(matrix[i]);
+    
+    free(matrix);
+
     DEBUG_PRINTLN(finalString.c_str());
 
     finalString.replace("*","");
